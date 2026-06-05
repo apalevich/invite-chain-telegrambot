@@ -46,8 +46,8 @@ Sequenced build plan for the exchange bot. Work top to bottom; each phase has a 
 - **Done gate:** language switch persists and group replies honor the invoker's language; `set-karma.ts` change shows on next lookup.
 
 ## Phase 7 — Telegram setup & deploy
-- [ ] BotFather: disable group privacy; register `/check`, `/language` via `setMyCommands`; add bot to the group.
-- [ ] Install Bun on the VPS (per-user); `ecosystem.config.cjs` with Bun interpreter; `pm2 start` + `pm2 save`.
+- [x] BotFather: disable group privacy; register `/check`, `/language` via `setMyCommands`; add bot to the group.
+- [x] Install Bun on the VPS (per-user); `ecosystem.config.cjs` with Bun interpreter; `pm2 start` + `pm2 save`.
 - **Done gate:** `pm2 list` shows `exchange-bot` online beside existing Node apps; all four lookups + karma work live; survives `pm2 restart` and a reboot.
 
 ## Resolve before/while building (defaults already chosen — see SPEC §13)
