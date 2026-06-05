@@ -21,10 +21,10 @@ Sequenced build plan for the exchange bot. Work top to bottom; each phase has a 
 - **Done gate:** unit tests pass for founder chain (`[@apalevich]`), a depth-5 chain, cycle guard, and all three karma sign cases, in both locales.
 
 ## Phase 3 — Lookup (the 4 methods)
-- [ ] `features/lookup.ts`: resolve target from (1) reply, (2) `/check @user` in group, (3) `/check @user` in DM, (4) DM forward.
-- [ ] Negative path: unknown user → localized "no record".
-- [ ] Forward-privacy path: anonymized forward → distinct localized "hidden identity" message.
-- [ ] Middleware: upsert sender's username/name on every update (`repo/users.upsertSeenUser`).
+- [x] `features/lookup.ts`: resolve target from (1) reply, (2) `/check @user` in group, (3) `/check @user` in DM, (4) DM forward.
+- [x] Negative path: unknown user → localized "no record".
+- [x] Forward-privacy path: anonymized forward → distinct localized "hidden identity" message.
+- [x] Middleware: upsert sender's username/name on every update (`repo/users.upsertSeenUser`).
 - **Done gate:** all §5.2 acceptance criteria pass (mocked `Context`), including the forward-privacy sub-case.
 
 ## Phase 4 — Non-member DM gate
