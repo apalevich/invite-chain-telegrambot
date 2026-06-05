@@ -41,8 +41,8 @@ Sequenced build plan for the exchange bot. Work top to bottom; each phase has a 
 - **Done gate:** all §5.3 acceptance criteria pass, especially the 24h per-pair window, case-insensitivity, whole-word, and self/no-counterparty skips.
 
 ## Phase 6 — Language command & admin script
-- [ ] `features/language.ts`: `/language` (alias `/lang`) in DM lists languages, sets+persists per `telegram_id`.
-- [ ] `scripts/set-karma.ts`: `<telegram_id> <+N|-N|=N>` adjusts karma from the shell.
+- [x] `features/language.ts`: `/language` (alias `/lang`) in DM lists languages, sets+persists per `telegram_id`.
+- [x] `scripts/set-karma.ts`: `<telegram_id> <+N|-N|=N>` adjusts karma from the shell.
 - **Done gate:** language switch persists and group replies honor the invoker's language; `set-karma.ts` change shows on next lookup.
 
 ## Phase 7 — Telegram setup & deploy

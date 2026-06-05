@@ -70,4 +70,9 @@ export class UserRepository {
       "en"
     );
   }
+
+  setLanguage(telegram_id: number, language: string): void {
+    const stmt = this.db.prepare("UPDATE users SET language = ? WHERE telegram_id = ?");
+    stmt.run(language, telegram_id);
+  }
 }
