@@ -28,8 +28,8 @@ Sequenced build plan for the exchange bot. Work top to bottom; each phase has a 
 - **Done gate:** all §5.2 acceptance criteria pass (mocked `Context`), including the forward-privacy sub-case.
 
 ## Phase 4 — Non-member DM gate
-- [ ] `features/gate.ts`: in private chats, if sender ∉ `users`, reply `I don't recognize you. Support: @apalevich` (localized, `DEFAULT_LANGUAGE`, `SUPPORT_CONTACT`) and stop.
-- [ ] Wire it to run **before** all other private-chat handlers.
+- [x] `features/gate.ts`: in private chats, if sender ∉ `users`, reply `I don't recognize you. Support: @apalevich` (localized, `DEFAULT_LANGUAGE`, `SUPPORT_CONTACT`) and stop.
+- [x] Wire it to run **before** all other private-chat handlers.
 - **Done gate:** §5.6 acceptance criteria pass — non-member gets only that reply; members unaffected.
 
 ## Phase 5 — Karma scanner
