@@ -9,9 +9,9 @@ Sequenced build plan for the exchange bot. Work top to bottom; each phase has a 
 - **Done gate:** `bun run src/index.ts` boots, reads `BOT_TOKEN`, and connects to Telegram (even with no handlers yet).
 
 ## Phase 1 — Data layer & seed
-- [ ] `db.ts`: open SQLite (WAL on), run migration creating `users` + `exchanges` per `SPEC.md` §6.1.
-- [ ] `scripts/import-csv.ts`: idempotent upsert from the CSV; strip `@`, empty→NULL, karma 0, language `en`.
-- [ ] Import validation: exactly one root, no orphan `invited_by`, warn on dup usernames.
+- [x] `db.ts`: open SQLite (WAL on), run migration creating `users` + `exchanges` per `SPEC.md` §6.1.
+- [x] `scripts/import-csv.ts`: idempotent upsert from the CSV; strip `@`, empty→NULL, karma 0, language `en`.
+- [x] Import validation: exactly one root, no orphan `invited_by`, warn on dup usernames.
 - **Done gate:** importing the provided CSV yields **62** members, **1** root (`@apalevich`), **0** orphans; re-running changes nothing.
 
 ## Phase 2 — Profile (chain + karma)
