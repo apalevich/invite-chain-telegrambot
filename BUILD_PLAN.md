@@ -15,9 +15,9 @@ Sequenced build plan for the exchange bot. Work top to bottom; each phase has a 
 - **Done gate:** importing the provided CSV yields **62** members, **1** root (`@apalevich`), **0** orphans; re-running changes nothing.
 
 ## Phase 2 — Profile (chain + karma)
-- [ ] `repo/users.ts`: `getById`, `getByUsername` (case-insensitive, no `@`), `chain()` with cycle guard.
-- [ ] `features/profile.ts`: assemble the profile, karma sign rule (`+N` / `-N` / `0`), date via `Intl`.
-- [ ] i18n scaffolding (`i18n/index.ts`, `en.ts`, `ru.ts`) with the profile template + negative messages.
+- [x] `repo/users.ts`: `getById`, `getByUsername` (case-insensitive, no `@`), `chain()` with cycle guard.
+- [x] `features/profile.ts`: assemble the profile, karma sign rule (`+N` / `-N` / `0`), date via `Intl`.
+- [x] i18n scaffolding (`i18n/index.ts`, `en.ts`, `ru.ts`) with the profile template + negative messages.
 - **Done gate:** unit tests pass for founder chain (`[@apalevich]`), a depth-5 chain, cycle guard, and all three karma sign cases, in both locales.
 
 ## Phase 3 — Lookup (the 4 methods)
