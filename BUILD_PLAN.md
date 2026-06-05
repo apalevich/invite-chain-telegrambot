@@ -33,11 +33,11 @@ Sequenced build plan for the exchange bot. Work top to bottom; each phase has a 
 - **Done gate:** §5.6 acceptance criteria pass — non-member gets only that reply; members unaffected.
 
 ## Phase 5 — Karma scanner
-- [ ] `features/exchange.ts`: whole-word, case-insensitive match of `KARMA_TRIGGERS` (default `обменялись`).
-- [ ] Counterparty resolution: reply → replied-to user; else first resolvable `@mention`.
-- [ ] Credit +1 to both **known members**; ignore self-exchange; ignore no-counterparty.
-- [ ] `repo/karma.ts`: `withinDedupWindow(pair)` against `exchanges` (per-pair `KARMA_DEDUP_HOURS`), `credit()` writes the audit row + bumps `users.karma`.
-- [ ] Optional `KARMA_ANNOUNCE` confirmation (default off).
+- [x] `features/exchange.ts`: whole-word, case-insensitive match of `KARMA_TRIGGERS` (default `обменялись`).
+- [x] Counterparty resolution: reply → replied-to user; else first resolvable `@mention`.
+- [x] Credit +1 to both **known members**; ignore self-exchange; ignore no-counterparty.
+- [x] `repo/karma.ts`: `withinDedupWindow(pair)` against `exchanges` (per-pair `KARMA_DEDUP_HOURS`), `credit()` writes the audit row + bumps `users.karma`.
+- [x] Optional `KARMA_ANNOUNCE` confirmation (default off).
 - **Done gate:** all §5.3 acceptance criteria pass, especially the 24h per-pair window, case-insensitivity, whole-word, and self/no-counterparty skips.
 
 ## Phase 6 — Language command & admin script
