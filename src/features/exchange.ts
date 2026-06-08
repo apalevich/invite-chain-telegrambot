@@ -69,6 +69,9 @@ export function createKarmaScannerHandler(
   return async (ctx, next) => {
     // Only process messages in the group
     if (ctx.chat?.id !== config.groupChatId) {
+      if (ctx.message?.text) {
+        console.log(`[karma] skipped: chat.id=${ctx.chat?.id} (configured groupChatId=${config.groupChatId})`);
+      }
       return next();
     }
 
@@ -89,7 +92,9 @@ export function createKarmaScannerHandler(
 
     // Resolve counterparty
     const counterpartyId = resolveCounterpartyUsername(ctx, userRepo);
+    console.log(`[karma] trigger matched: author=${ctx.from?.id}, counterparty=${counterpartyId}, text="${messageText.slice(0, 60)}"`);
     if (!counterpartyId) {
+      console.log(`[karma] skipped: no counterparty resolved`);
       return next();
     }
 

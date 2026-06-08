@@ -52,7 +52,20 @@ bot.use(createNonMemberGate(userRepo, DEFAULT_LANGUAGE, SUPPORT_CONTACT));
 // Command: /check (in group or DM)
 bot.command("check", async (ctx) => {
   const userLanguage = (userRepo.getById(ctx.from?.id)?.language || DEFAULT_LANGUAGE) as Language;
+
+  // Debug logging
+  const replyTo = ctx.message?.reply_to_message;
+  if (replyTo) {
+    console.log(`[/check] reply lookup: reply_to.from.id=${replyTo.from?.id}, reply_to.from.username=@${replyTo.from?.username}, chat_type=${ctx.chat?.type}`);
+    const found = replyTo.from ? userRepo.getById(replyTo.from.id) : null;
+    console.log(`[/check] DB lookup result: ${found ? `found user @${found.username}` : "NOT FOUND"}`);
+  } else if (ctx.message?.text) {
+    const match = ctx.message.text.match(/@(\w+)/);
+    console.log(`[/check] text lookup: username=${match?.[1] ?? "none"}, chat_type=${ctx.chat?.type}`);
+  }
+
   const result = resolveLookupTarget(ctx, userRepo, SUPPORT_CONTACT, userLanguage);
+  console.log(`[/check] result: type=${result.type}, found=${result.found}`);
 
   await ctx.reply(result.message || "");
 });
