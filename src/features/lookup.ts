@@ -92,6 +92,19 @@ export function resolveLookupTarget(
     };
   }
 
+  // Method 5: bare /check (no reply, no @mention, no forward) -> show the
+  // sender their own profile.
+  if (ctx.from) {
+    const self = repo.getById(ctx.from.id);
+    if (self) {
+      return {
+        found: true,
+        type: "success",
+        message: buildProfile(self, repo, userLanguage, supportContact),
+      };
+    }
+  }
+
   return {
     found: false,
     type: "not_found",

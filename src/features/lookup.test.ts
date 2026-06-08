@@ -152,6 +152,45 @@ describe("Lookup", () => {
     });
   });
 
+  describe("Self-lookup (bare /check)", () => {
+    it("returns the sender's own profile when no target is given", () => {
+      const ctx = {
+        message: { text: "/check" },
+        from: { id: 2, first_name: "User2" },
+      } as any;
+
+      const result = resolveLookupTarget(ctx, repo, "@founder", "en");
+
+      expect(result.found).toBe(true);
+      expect(result.type).toBe("success");
+      expect(result.message).toContain("@user2");
+    });
+
+    it("returns 'no record' when the sender is not a known member", () => {
+      const ctx = {
+        message: { text: "/check" },
+        from: { id: 999, first_name: "Stranger" },
+      } as any;
+
+      const result = resolveLookupTarget(ctx, repo, "@founder", "en");
+
+      expect(result.found).toBe(false);
+      expect(result.type).toBe("not_found");
+    });
+
+    it("an unresolved @mention does not fall through to self-lookup", () => {
+      const ctx = {
+        message: { text: "/check @unknownuser" },
+        from: { id: 2, first_name: "User2" },
+      } as any;
+
+      const result = resolveLookupTarget(ctx, repo, "@founder", "en");
+
+      expect(result.found).toBe(false);
+      expect(result.type).toBe("not_found");
+    });
+  });
+
   describe("Locale support", () => {
     it("returns localized error messages in Russian", () => {
       const ctx = {
