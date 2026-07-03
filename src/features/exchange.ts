@@ -8,8 +8,16 @@ function parseKarmaTriggers(triggersEnv: string): string[] {
 }
 
 function triggerMatches(text: string, triggers: string[]): boolean {
-  const words = text.toLowerCase().match(/[\p{L}\p{N}_]+/gu) || [];
-  return words.some((word) => triggers.includes(word));
+  // Split on sentence-ending punctuation, keeping the delimiter to identify questions.
+  const parts = text.split(/([.!?]+)/);
+  // parts alternates: [segment, delimiter, segment, delimiter, ...]
+  for (let i = 0; i < parts.length; i += 2) {
+    const delimiter = parts[i + 1] || '';
+    if (delimiter.includes('?')) continue; // this segment is a question — skip
+    const words = parts[i].toLowerCase().match(/[\p{L}\p{N}_]+/gu) || [];
+    if (words.some((word) => triggers.includes(word))) return true;
+  }
+  return false;
 }
 
 function resolveCounterparty(ctx: Context): number | null {
