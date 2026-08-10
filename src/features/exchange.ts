@@ -7,6 +7,11 @@ function parseKarmaTriggers(triggersEnv: string): string[] {
   return triggersEnv.split(",").map((t) => t.trim().toLowerCase());
 }
 
+function extractText(ctx: Context): string | undefined {
+  const msg = ctx.message ?? ctx.editedMessage;
+  return msg?.text ?? msg?.caption;
+}
+
 function triggerMatches(text: string, triggers: string[]): boolean {
   // Split on sentence-ending punctuation, keeping the delimiter to identify questions.
   const parts = text.split(/([.!?]+)/);
@@ -20,33 +25,20 @@ function triggerMatches(text: string, triggers: string[]): boolean {
   return false;
 }
 
-function resolveCounterparty(ctx: Context): number | null {
-  // Method 1: Reply to a user
-  if (ctx.message?.reply_to_message?.from?.id) {
-    return ctx.message.reply_to_message.from.id;
-  }
-
-  // Method 2: First @mention
-  if (ctx.message?.text) {
-    const matches = ctx.message.text.match(/@(\w+)/g);
-    if (matches && matches.length > 0) {
-      // Extract usernames and try to resolve (would need repo access)
-      return null; // Will be resolved in the handler with repo
-    }
-  }
-
-  return null;
-}
-
 function resolveCounterpartyUsername(ctx: Context, userRepo: UserRepository): number | null {
-  // Method 1: Reply to a user
-  if (ctx.message?.reply_to_message?.from?.id) {
-    return ctx.message.reply_to_message.from.id;
+  const msg = ctx.message ?? ctx.editedMessage;
+  const authorId = ctx.from?.id;
+
+  // Method 1: Reply to a user (but skip if replying to self)
+  const replyFromId = msg?.reply_to_message?.from?.id;
+  if (replyFromId && replyFromId !== authorId) {
+    return replyFromId;
   }
 
   // Method 2: First @mention that resolves to a known member
-  if (ctx.message?.text) {
-    const matches = ctx.message.text.match(/@(\w+)/g);
+  const text = extractText(ctx);
+  if (text) {
+    const matches = text.match(/@(\w+)/g);
     if (matches) {
       for (const mention of matches) {
         const username = mention.slice(1); // Remove @
@@ -77,13 +69,14 @@ export function createKarmaScannerHandler(
   return async (ctx, next) => {
     // Only process messages in the group
     if (ctx.chat?.id !== config.groupChatId) {
-      if (ctx.message?.text) {
+      const text = extractText(ctx);
+      if (text) {
         console.log(`[karma] skipped: chat.id=${ctx.chat?.id} (configured groupChatId=${config.groupChatId})`);
       }
       return next();
     }
 
-    const messageText = ctx.message?.text;
+    const messageText = extractText(ctx);
     if (!messageText) {
       return next();
     }
@@ -108,6 +101,7 @@ export function createKarmaScannerHandler(
 
     // Ignore self-exchange
     if (author.id === counterpartyId) {
+      console.log(`[karma] skipped: self-exchange (author=${author.id})`);
       return next();
     }
 
@@ -116,16 +110,19 @@ export function createKarmaScannerHandler(
     const counterpartyUser = userRepo.getById(counterpartyId);
 
     if (!authorUser || !counterpartyUser) {
+      console.log(`[karma] skipped: unknown member (author=${author.id}, counterparty=${counterpartyId})`);
       return next();
     }
 
     // Check dedup window
     if (karmaRepo.withinDedupWindow(author.id, counterpartyId, config.karmaDedupeHours)) {
+      console.log(`[karma] skipped: dedup window (pair=${author.id},${counterpartyId})`);
       return next();
     }
 
     // Credit karma
-    karmaRepo.credit(author.id, counterpartyId, ctx.chat?.id, ctx.message?.message_id);
+    const msg = ctx.message ?? ctx.editedMessage;
+    karmaRepo.credit(author.id, counterpartyId, ctx.chat?.id, msg?.message_id);
 
     // Optionally announce
     if (config.karmaAnnounce) {

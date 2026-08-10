@@ -239,6 +239,86 @@ describe("Karma Scanner (Exchange)", () => {
       const user1 = userRepo.getById(1);
       expect(user1?.karma).toBe(0); // No credit
     });
+
+    it("resolves counterparty from @mention when replying to self", async () => {
+      const handler = createKarmaScannerHandler(userRepo, karmaRepo, {
+        groupChatId: -123,
+        karmaTriggers: "обменялись",
+        karmaDedupeHours: 24,
+        karmaAnnounce: false,
+      });
+
+      const ctx = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: {
+          text: "обменялись @user2",
+          message_id: 100,
+          reply_to_message: { from: { id: 1 } }, // Reply to self
+        },
+      } as any;
+
+      const next = async () => {};
+      await handler(ctx, next);
+
+      const user1 = userRepo.getById(1);
+      const user2 = userRepo.getById(2);
+      expect(user1?.karma).toBe(1); // Should credit despite self-reply
+      expect(user2?.karma).toBe(1);
+    });
+  });
+
+  describe("Message type handling (edited, caption)", () => {
+    it("credits karma from edited message", async () => {
+      const handler = createKarmaScannerHandler(userRepo, karmaRepo, {
+        groupChatId: -123,
+        karmaTriggers: "обменялись",
+        karmaDedupeHours: 24,
+        karmaAnnounce: false,
+      });
+
+      const ctx = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: undefined,
+        editedMessage: { text: "обменялись @user2", message_id: 100 },
+      } as any;
+
+      const next = async () => {};
+      await handler(ctx, next);
+
+      const user1 = userRepo.getById(1);
+      const user2 = userRepo.getById(2);
+      expect(user1?.karma).toBe(1);
+      expect(user2?.karma).toBe(1);
+    });
+
+    it("credits karma from media caption", async () => {
+      const handler = createKarmaScannerHandler(userRepo, karmaRepo, {
+        groupChatId: -123,
+        karmaTriggers: "обменялись",
+        karmaDedupeHours: 24,
+        karmaAnnounce: false,
+      });
+
+      const ctx = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: {
+          caption: "обменялись @user2",
+          message_id: 100,
+          // No .text property (simulating a photo/video message)
+        },
+      } as any;
+
+      const next = async () => {};
+      await handler(ctx, next);
+
+      const user1 = userRepo.getById(1);
+      const user2 = userRepo.getById(2);
+      expect(user1?.karma).toBe(1);
+      expect(user2?.karma).toBe(1);
+    });
   });
 
   describe("Dedup window", () => {
