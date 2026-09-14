@@ -20,7 +20,12 @@ function triggerMatches(text: string, triggers: string[]): boolean {
     const delimiter = parts[i + 1] || '';
     if (delimiter.includes('?')) continue; // this segment is a question — skip
     const words = parts[i].toLowerCase().match(/[\p{L}\p{N}_]+/gu) || [];
-    if (words.some((word) => triggers.includes(word))) return true;
+    for (let j = 0; j < words.length; j++) {
+      if (!triggers.includes(words[j])) continue;
+      if (words[j + 1] === "бы") continue;               // (A) "обменялись бы" = conditional
+      if (words[j - 1] === "would" || words[j - 1] === "could") continue; // (B) conditional in English
+      return true;
+    }
   }
   return false;
 }

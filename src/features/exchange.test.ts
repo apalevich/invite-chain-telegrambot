@@ -120,6 +120,132 @@ describe("Karma Scanner (Exchange)", () => {
       const founder = userRepo.getById(1);
       expect(founder?.karma).toBe(0); // No karma credit
     });
+
+    it("does not match Russian conditional mood (бы after trigger)", async () => {
+      const handler = createKarmaScannerHandler(userRepo, karmaRepo, {
+        groupChatId: -123,
+        karmaTriggers: "обменялись",
+        karmaDedupeHours: 24,
+        karmaAnnounce: false,
+      });
+
+      const ctx = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: {
+          text: "Тегай в следующий раз, а то я не увидел) Обменялись бы. С TB",
+          message_id: 100,
+          reply_to_message: { from: { id: 2 } },
+        },
+      } as any;
+
+      const next = async () => {};
+      await handler(ctx, next);
+
+      const user1 = userRepo.getById(1);
+      expect(user1?.karma).toBe(0); // No credit for conditional
+    });
+
+    it("rejects trigger when бы immediately follows", async () => {
+      const handler = createKarmaScannerHandler(userRepo, karmaRepo, {
+        groupChatId: -123,
+        karmaTriggers: "обменялись",
+        karmaDedupeHours: 24,
+        karmaAnnounce: false,
+      });
+
+      const ctx = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: { text: "Обменялись бы, но не сложилось @user2", message_id: 100 },
+      } as any;
+
+      const next = async () => {};
+      await handler(ctx, next);
+
+      const user1 = userRepo.getById(1);
+      expect(user1?.karma).toBe(0); // No credit
+    });
+
+    it("matches when бы appears elsewhere in sentence", async () => {
+      const handler = createKarmaScannerHandler(userRepo, karmaRepo, {
+        groupChatId: -123,
+        karmaTriggers: "обменялись",
+        karmaDedupeHours: 24,
+        karmaAnnounce: false,
+      });
+
+      const ctx = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: { text: "бы обменялись @user2", message_id: 100 },
+      } as any;
+
+      const next = async () => {};
+      await handler(ctx, next);
+
+      const user1 = userRepo.getById(1);
+      const user2 = userRepo.getById(2);
+      expect(user1?.karma).toBe(1); // Should credit (бы before trigger is OK)
+      expect(user2?.karma).toBe(1);
+    });
+
+    it("does not match English conditional mood (would/could before trigger)", async () => {
+      const handler = createKarmaScannerHandler(userRepo, karmaRepo, {
+        groupChatId: -123,
+        karmaTriggers: "exchange",
+        karmaDedupeHours: 24,
+        karmaAnnounce: false,
+      });
+
+      // Test "would"
+      const ctx1 = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: { text: "we would exchange @user2", message_id: 100 },
+      } as any;
+
+      const next = async () => {};
+      await handler(ctx1, next);
+
+      let user1 = userRepo.getById(1);
+      expect(user1?.karma).toBe(0); // No credit for "would exchange"
+
+      // Test "could"
+      const ctx2 = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: { text: "we could exchange @user3", message_id: 101 },
+      } as any;
+
+      await handler(ctx2, next);
+
+      user1 = userRepo.getById(1);
+      expect(user1?.karma).toBe(0); // No credit for "could exchange"
+    });
+
+    it("matches when would/could appears after trigger", async () => {
+      const handler = createKarmaScannerHandler(userRepo, karmaRepo, {
+        groupChatId: -123,
+        karmaTriggers: "exchange",
+        karmaDedupeHours: 24,
+        karmaAnnounce: false,
+      });
+
+      const ctx = {
+        chat: { id: -123 },
+        from: { id: 1 },
+        message: { text: "exchange would happen @user2", message_id: 100 },
+      } as any;
+
+      const next = async () => {};
+      await handler(ctx, next);
+
+      const user1 = userRepo.getById(1);
+      const user2 = userRepo.getById(2);
+      expect(user1?.karma).toBe(1); // Should credit (would after trigger is OK)
+      expect(user2?.karma).toBe(1);
+    });
   });
 
   describe("Counterparty resolution", () => {
