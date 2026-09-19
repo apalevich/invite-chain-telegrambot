@@ -5,6 +5,7 @@ import { KarmaRepository } from "./repo/karma";
 import { createNonMemberGate } from "./features/gate";
 import { resolveLookupTarget } from "./features/lookup";
 import { createKarmaScannerHandler } from "./features/exchange";
+import { createUndoHandler } from "./features/undo";
 import { createLanguageCommand, createLanguageCallbackHandler } from "./features/language";
 import { buildProfile } from "./features/profile";
 import { t, type Language } from "./i18n";
@@ -16,6 +17,7 @@ const GROUP_CHAT_ID = parseInt(process.env.GROUP_CHAT_ID || "0");
 const KARMA_TRIGGERS = process.env.KARMA_TRIGGERS || "обменялись";
 const KARMA_DEDUP_HOURS = parseInt(process.env.KARMA_DEDUP_HOURS || "24");
 const KARMA_ANNOUNCE = process.env.KARMA_ANNOUNCE === "true";
+const ADMIN_TELEGRAM_ID = parseInt(process.env.ADMIN_TELEGRAM_ID || "0");
 const DEFAULT_LANGUAGE = (process.env.DEFAULT_LANGUAGE || "en") as Language;
 const SUPPORT_CONTACT = process.env.SUPPORT_CONTACT || "@apalevich";
 
@@ -25,6 +27,10 @@ if (!BOT_TOKEN) {
 
 if (GROUP_CHAT_ID === 0) {
   console.warn("⚠ GROUP_CHAT_ID not set; karma scanner will not work");
+}
+
+if (ADMIN_TELEGRAM_ID === 0) {
+  console.warn("⚠ ADMIN_TELEGRAM_ID not set; undo command will be disabled for everyone");
 }
 
 // Initialize database
@@ -84,6 +90,16 @@ bot.use(
     karmaDedupeHours: KARMA_DEDUP_HOURS,
     karmaAnnounce: KARMA_ANNOUNCE,
     supportLanguage: DEFAULT_LANGUAGE,
+  })
+);
+
+// Feature: undo karma (admin-only, reply to bot's announcement)
+bot.use(
+  createUndoHandler(userRepo, karmaRepo, {
+    groupChatId: GROUP_CHAT_ID,
+    adminTelegramId: ADMIN_TELEGRAM_ID,
+    supportContact: SUPPORT_CONTACT,
+    defaultLanguage: DEFAULT_LANGUAGE,
   })
 );
 

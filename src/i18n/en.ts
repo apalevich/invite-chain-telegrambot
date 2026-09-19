@@ -12,6 +12,9 @@ export const en = {
   "language.changed": "Language changed to {language}.",
 
   "karma.credited": "Exchanged! Both {user1} and {user2} earned +1 karma.",
+  "karma.undo_forbidden": "Only {admin} can undo an exchange.",
+  "karma.undo_success": "Undo: karma reverted for {user1} and {user2}.",
+  "karma.undo_already_done": "This exchange was already undone.",
 } as const;
 
 export type EnLocaleKey = keyof typeof en;

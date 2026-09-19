@@ -33,5 +33,18 @@ export function initializeDatabase(dbPath: string): Database {
     CREATE INDEX IF NOT EXISTS idx_exchanges_pair_time ON exchanges(user_a, user_b, created_at);
   `);
 
+  // Migration: add undo-tracking columns to `exchanges`.
+  // SQLite does not support "ALTER TABLE ... ADD COLUMN IF NOT EXISTS" syntax,
+  // so we check which columns exist first and only add what's missing (idempotent).
+  const exchangeColumns = new Set(
+    (db.query("PRAGMA table_info(exchanges)").all() as { name: string }[]).map((c) => c.name)
+  );
+  if (!exchangeColumns.has("announcement_message_id")) {
+    db.exec("ALTER TABLE exchanges ADD COLUMN announcement_message_id INTEGER");
+  }
+  if (!exchangeColumns.has("undone_at")) {
+    db.exec("ALTER TABLE exchanges ADD COLUMN undone_at TEXT");
+  }
+
   return db;
 }

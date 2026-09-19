@@ -1,10 +1,14 @@
 import { Context, MiddlewareHandler } from "grammy";
-import { UserRepository } from "../repo/users";
+import { UserRepository, type User } from "../repo/users";
 import { KarmaRepository } from "../repo/karma";
 import { t, type Language } from "../i18n";
 
 function parseKarmaTriggers(triggersEnv: string): string[] {
   return triggersEnv.split(",").map((t) => t.trim().toLowerCase());
+}
+
+export function formatDisplayName(user: { telegram_id: number; username: string | null; first_name: string | null }): string {
+  return user.username ? `@${user.username}` : user.first_name || `user${user.telegram_id}`;
 }
 
 function extractText(ctx: Context): string | undefined {
@@ -127,17 +131,20 @@ export function createKarmaScannerHandler(
 
     // Credit karma
     const msg = ctx.message ?? ctx.editedMessage;
-    karmaRepo.credit(author.id, counterpartyId, ctx.chat?.id, msg?.message_id);
+    const exchangeId = karmaRepo.credit(author.id, counterpartyId, ctx.chat?.id, msg?.message_id);
 
     // Optionally announce
     if (config.karmaAnnounce) {
-      const authorName = authorUser.username ? `@${authorUser.username}` : authorUser.first_name || `user${author.id}`;
-      const counterpartyName = counterpartyUser.username ? `@${counterpartyUser.username}` : counterpartyUser.first_name || `user${counterpartyId}`;
+      const authorName = formatDisplayName(authorUser);
+      const counterpartyName = formatDisplayName(counterpartyUser);
       const announcement = t("karma.credited", config.supportLanguage || "en", {
         user1: authorName,
         user2: counterpartyName,
       });
-      await ctx.reply(announcement);
+      const sent = await ctx.reply(announcement);
+      if (sent?.message_id) {
+        karmaRepo.setAnnouncementMessageId(exchangeId, sent.message_id);
+      }
     }
 
     // Emit the karma credited event and continue

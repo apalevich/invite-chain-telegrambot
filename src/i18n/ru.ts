@@ -12,6 +12,9 @@ export const ru = {
   "language.changed": "Язык изменён на {language}.",
 
   "karma.credited": "Обменялись! {user1} и {user2} получили по +1 карме.",
+  "karma.undo_forbidden": "Отменить обмен может только {admin}.",
+  "karma.undo_success": "Отменено: карма списана у {user1} и {user2}.",
+  "karma.undo_already_done": "Этот обмен уже был отменён.",
 } as const;
 
 export type RuLocaleKey = keyof typeof ru;

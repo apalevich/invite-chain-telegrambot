@@ -31,7 +31,9 @@ describe("Karma Scanner (Exchange)", () => {
         user_b    INTEGER NOT NULL,
         chat_id   INTEGER,
         message_id INTEGER,
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+        announcement_message_id INTEGER,
+        undone_at TEXT
       );
       CREATE INDEX idx_exchanges_pair_time ON exchanges(user_a, user_b, created_at);
     `);
